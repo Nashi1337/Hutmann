@@ -22,9 +22,15 @@ public class PlayerController : MonoBehaviour
     private Vector3 velocity;
     private float pitch;
 
+    private PlayerEquipment equipment;
+    private ItemDefinition equippedItem;
+    private GameObject handSocket;
+    
     private void Awake()
     {
+        equipment = GetComponent<PlayerEquipment>();
         controller = GetComponent<CharacterController>();
+        handSocket = GameObject.Find("HandSocket");
         if (cameraPivot == null)
         {
             Debug.LogError("No camera pivot set");
@@ -35,12 +41,37 @@ public class PlayerController : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        if (equipment != null)
+            equipment.OnEquippedChanged += HandleEquippedChanged;
+    }
+    
+    void OnDisable()
+    {
+        if (equipment != null)
+            equipment.OnEquippedChanged -= HandleEquippedChanged;
     }
 
     private void Update()
     {
         Look();
         Move();
+    }
+    
+    private void HandleEquippedChanged(ItemDefinition item, int index)
+    {
+        equippedItem = item;
+        Debug.Log($"Equipped slot {index + 1}: {(item ? item.displayName : "None")}");
+        SpawnEquippedItem();
+    }
+    
+    public void SpawnEquippedItem()
+    {
+        if (equippedItem == null || equippedItem.equippedPrefab == null || handSocket == null) return;
+        for (int i = handSocket.transform.childCount - 1; i >= 0; i--)
+        {
+            Destroy(handSocket.transform.GetChild(i).gameObject);
+        }
+        Instantiate(equippedItem.equippedPrefab, handSocket.transform.position, handSocket.transform.rotation, handSocket.transform);
     }
 
     private void Look()
