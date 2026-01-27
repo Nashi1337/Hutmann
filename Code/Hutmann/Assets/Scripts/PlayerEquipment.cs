@@ -5,14 +5,14 @@ using UnityEngine.InputSystem;
 public class PlayerEquipment : MonoBehaviour
 {
     [Header("3 quick slots (index 0..2)")]
-    [SerializeField] private ItemDefinition[] quickSlots = new ItemDefinition[3];
+    [SerializeField] private ItemDefinition[] quickSlots = new ItemDefinition[4];
 
     [Header("Input")]
     [SerializeField] private bool wrapAround = true;
 
     public event Action<ItemDefinition, int> OnEquippedChanged;
 
-    public int CurrentIndex { get; private set; } = 0;
+    public int CurrentIndex { get; private set; } = 4;
     public ItemDefinition CurrentItem => IsValidIndex(CurrentIndex) ? quickSlots[CurrentIndex] : null;
 
     void Start()
@@ -28,6 +28,7 @@ public class PlayerEquipment : MonoBehaviour
             if(kb.digit1Key.wasPressedThisFrame) EquipIndex(0);
             if(kb.digit2Key.wasPressedThisFrame) EquipIndex(1);
             if(kb.digit3Key.wasPressedThisFrame) EquipIndex(2);
+            if(kb.digit4Key.wasPressedThisFrame) EquipIndex(3);
         }
 
         var mouse = Mouse.current;

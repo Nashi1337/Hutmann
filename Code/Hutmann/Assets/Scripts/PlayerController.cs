@@ -66,11 +66,13 @@ public class PlayerController : MonoBehaviour
     
     public void SpawnEquippedItem()
     {
-        if (equippedItem == null || equippedItem.equippedPrefab == null || handSocket == null) return;
+        if (handSocket == null) return;
         for (int i = handSocket.transform.childCount - 1; i >= 0; i--)
         {
             Destroy(handSocket.transform.GetChild(i).gameObject);
         }
+
+        if (equippedItem == null || equippedItem.equippedPrefab == null) return;
         Instantiate(equippedItem.equippedPrefab, handSocket.transform.position, handSocket.transform.rotation, handSocket.transform);
     }
 
