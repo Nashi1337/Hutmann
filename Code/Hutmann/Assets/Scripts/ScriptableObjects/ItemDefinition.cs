@@ -1,9 +1,20 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Game/Item Definition")]
-public class ItemDefinition : ScriptableObject
+namespace ScriptableObjects
 {
-    public string displayName;
+    public enum ItemType
+    {
+        None,
+        Shovel
+    }
 
-    public GameObject equippedPrefab;
+    [CreateAssetMenu(menuName = "Game/Item Definition")]
+    public class ItemDefinition : ScriptableObject
+    {
+        public string displayName;
+
+        public ItemType itemType = ItemType.None;
+
+        public GameObject equippedPrefab;
+    }
 }
