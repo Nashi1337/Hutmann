@@ -13,4 +13,8 @@ MonoBehaviour:
   m_Name: Map
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   displayName: Map
+  itemType: 0
   equippedPrefab: {fileID: 3261255493569505627, guid: 2a78e3dc686666e42a0fa6047bc52f9c, type: 3}
+  equipLocalPosition: {x: 0, y: 0.65, z: 0.3}
+  equipLocalEuler: {x: -60, y: 0, z: 0}
+  equipLocalScale: {x: 1, y: 0.01, z: 1}
