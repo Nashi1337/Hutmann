@@ -16,5 +16,10 @@ namespace ScriptableObjects
         public ItemType itemType = ItemType.None;
 
         public GameObject equippedPrefab;
+
+        [Header("First Person Equip Pose")]
+        public Vector3 equipLocalPosition = Vector3.zero;
+        public Vector3 equipLocalEuler = Vector3.zero;
+        public Vector3 equipLocalScale = Vector3.one;
     }
 }
