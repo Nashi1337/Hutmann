@@ -18,6 +18,7 @@ public abstract class ShovelDigTargetBase : MonoBehaviour
     [SerializeField] private Color emptyColor = new Color32(35, 20, 12, 255);
 
     private Vector3 initialScale;
+    private Vector3 initialPosition;
     private MaterialPropertyBlock propertyBlock;
 
     protected float Progress01 { get; private set; }
@@ -31,6 +32,7 @@ public abstract class ShovelDigTargetBase : MonoBehaviour
             fillRenderer = GetComponentInChildren<Renderer>();
 
         initialScale = fillVisual.localScale;
+        initialPosition = fillVisual.localPosition;
         propertyBlock = new MaterialPropertyBlock();
 
         SetProgress(0f);
@@ -43,6 +45,9 @@ public abstract class ShovelDigTargetBase : MonoBehaviour
 
         UpdateScale(fill01);
         UpdateColor(fill01);
+
+        if (Progress01 >= 1f)
+            OnComplete();
     }
 
     private void UpdateScale(float fill01)
@@ -57,6 +62,7 @@ public abstract class ShovelDigTargetBase : MonoBehaviour
                 break;
             case FillAxis.Y:
                 scaled.y = initialScale.y * axisScale;
+                AdjustPositionForYScale(axisScale);
                 break;
             case FillAxis.Z:
                 scaled.z = initialScale.z * axisScale;
@@ -64,6 +70,14 @@ public abstract class ShovelDigTargetBase : MonoBehaviour
         }
 
         fillVisual.localScale = scaled;
+    }
+
+    private void AdjustPositionForYScale(float axisScale)
+    {
+        Vector3 newPos = initialPosition;
+        float scaleDifference = 1f - axisScale;
+        newPos.y -= (scaleDifference * initialScale.y) / 2f;
+        fillVisual.localPosition = newPos;
     }
 
     private void UpdateColor(float fill01)
@@ -77,5 +91,9 @@ public abstract class ShovelDigTargetBase : MonoBehaviour
         propertyBlock.SetColor("_BaseColor", fillColor);
         fillRenderer.SetPropertyBlock(propertyBlock);
     }
-}
 
+    protected virtual void OnComplete()
+    {
+        Destroy(gameObject);
+    }
+}

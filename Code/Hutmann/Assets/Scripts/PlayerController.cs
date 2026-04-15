@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float walkSpeed = 5f;
     [SerializeField] private float sprintSpeed = 8f;
     [SerializeField] private float acceleration = 12f;
+    [SerializeField] private float gravity = -25f;
 
     [SerializeField] private float mouseSensitivity = 0.12f;
     [SerializeField] private float maxPitch = 85f;
@@ -111,6 +112,11 @@ public class PlayerController : MonoBehaviour
         if (grounded && velocity.y < 0f)
         {
             velocity.y = -2f;
+        }
+
+        if (!grounded)
+        {
+            velocity.y += gravity * Time.deltaTime;
         }
 
         Vector3 inputDir = new Vector3(moveInput.x, 0f, moveInput.y);
