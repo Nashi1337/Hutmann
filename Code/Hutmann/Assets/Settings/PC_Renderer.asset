@@ -16,10 +16,25 @@ MonoBehaviour:
   injectionPoint: 600
   fetchColorBuffer: 1
   requirements: 4
-  passMaterial: {fileID: 2100000, guid: 78a08787ca30045abb69f6f7dd878e09, type: 2}
+  passMaterial: {fileID: 2100000, guid: 80f11cc33c0c82e4686888461a8a1a4f, type: 2}
   passIndex: 0
   bindDepthStencilAttachment: 0
   m_Version: 1
+--- !u!114 &-366087374501793770
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfd21acbab6cedd44a3e32c4a82c0d22, type: 3}
+  m_Name: PSXRenderFeature
+  m_EditorClassIdentifier: Assembly-CSharp::PSXRenderFeature
+  m_Active: 0
+  settings:
+    material: {fileID: 2100000, guid: 80f11cc33c0c82e4686888461a8a1a4f, type: 2}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -47,7 +62,8 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: 7833122117494664109}
   - {fileID: -2681085552020186802}
-  m_RendererFeatureMap: ad6b866f10d7b46c4e99673be5decada
+  - {fileID: -366087374501793770}
+  m_RendererFeatureMap: ad6b866f10d7b46c4e99673be5decada16b010f67865ebfa
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
