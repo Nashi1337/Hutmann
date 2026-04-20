@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: Shovel
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   displayName: Shovel
+  itemType: 1
   equippedPrefab: {fileID: 3359149298963163353, guid: ff1550d284611b04db21e97d6feb6c12, type: 3}

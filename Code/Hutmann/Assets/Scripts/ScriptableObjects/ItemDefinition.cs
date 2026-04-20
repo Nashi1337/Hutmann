@@ -1,9 +1,25 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Game/Item Definition")]
-public class ItemDefinition : ScriptableObject
+namespace ScriptableObjects
 {
-    public string displayName;
+    public enum ItemType
+    {
+        None,
+        Shovel
+    }
 
-    public GameObject equippedPrefab;
+    [CreateAssetMenu(menuName = "Game/Item Definition")]
+    public class ItemDefinition : ScriptableObject
+    {
+        public string displayName;
+
+        public ItemType itemType = ItemType.None;
+
+        public GameObject equippedPrefab;
+
+        [Header("First Person Equip Pose")]
+        public Vector3 equipLocalPosition = Vector3.zero;
+        public Vector3 equipLocalEuler = Vector3.zero;
+        public Vector3 equipLocalScale = Vector3.one;
+    }
 }

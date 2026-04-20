@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using ScriptableObjects;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float walkSpeed = 5f;
     [SerializeField] private float sprintSpeed = 8f;
     [SerializeField] private float acceleration = 12f;
+    [SerializeField] private float gravity = -25f;
 
     [SerializeField] private float mouseSensitivity = 0.12f;
     [SerializeField] private float maxPitch = 85f;
@@ -24,13 +25,24 @@ public class PlayerController : MonoBehaviour
 
     private PlayerEquipment equipment;
     private ItemDefinition equippedItem;
-    private GameObject handSocket;
+    [SerializeField] private Transform handSocket;
     
     private void Awake()
     {
         equipment = GetComponent<PlayerEquipment>();
         controller = GetComponent<CharacterController>();
-        handSocket = GameObject.Find("HandSocket");
+        if (handSocket == null)
+        {
+            var handSocketObject = GameObject.Find("HandSocket");
+            if (handSocketObject != null)
+                handSocket = handSocketObject.transform;
+        }
+
+        if (handSocket == null)
+        {
+            Debug.LogWarning("No hand socket assigned/found. Equipped items will not spawn.");
+        }
+
         if (cameraPivot == null)
         {
             Debug.LogError("No camera pivot set");
@@ -73,7 +85,11 @@ public class PlayerController : MonoBehaviour
         }
 
         if (equippedItem == null || equippedItem.equippedPrefab == null) return;
-        Instantiate(equippedItem.equippedPrefab, handSocket.transform.position, handSocket.transform.rotation, handSocket.transform);
+
+        var equippedInstance = Instantiate(equippedItem.equippedPrefab, handSocket);
+        equippedInstance.transform.localPosition = equippedItem.equipLocalPosition;
+        equippedInstance.transform.localRotation = Quaternion.Euler(equippedItem.equipLocalEuler);
+        equippedInstance.transform.localScale = equippedItem.equipLocalScale;
     }
 
     private void Look()
@@ -96,6 +112,11 @@ public class PlayerController : MonoBehaviour
         if (grounded && velocity.y < 0f)
         {
             velocity.y = -2f;
+        }
+
+        if (!grounded)
+        {
+            velocity.y += gravity * Time.deltaTime;
         }
 
         Vector3 inputDir = new Vector3(moveInput.x, 0f, moveInput.y);
