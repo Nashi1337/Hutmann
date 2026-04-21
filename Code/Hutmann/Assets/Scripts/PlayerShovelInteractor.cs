@@ -4,11 +4,19 @@ using UnityEngine.InputSystem;
 
 public class PlayerShovelInteractor : MonoBehaviour
 {
+    private enum LoadedDirtSource
+    {
+        None,
+        Grave,
+        Dump
+    }
+
     private enum LookTargetType
     {
         None,
         Obstructed,
-        DigTarget
+        DigTarget,
+        DumpTarget
     }
 
     [Header("References")]
@@ -21,6 +29,14 @@ public class PlayerShovelInteractor : MonoBehaviour
     [Header("Interaction")]
     [SerializeField] private float interactDistance = 3f;
     [SerializeField] private LayerMask interactMask = ~0;
+    [SerializeField] private bool includeTriggerColliders = true;
+
+    [Header("Audio")]
+    [SerializeField] private AudioClip digSound;
+    [SerializeField] [Range(0f, 1f)] private float digVolume = 1f;
+    [SerializeField] private float digPitchMin = 0.9f;
+    [SerializeField] private float digPitchMax = 1.1f;
+    private AudioSource _audioSource;
 
     [Header("Debug")]
     [SerializeField] private bool debugInteraction = false;
@@ -30,6 +46,7 @@ public class PlayerShovelInteractor : MonoBehaviour
 
     private bool _interactHeld;
     private bool _interactPressedThisFrame;
+    private LoadedDirtSource _loadedDirtSource = LoadedDirtSource.None;
     private GameObject _lastLookedObject;
     private LookTargetType _lastLookTargetType = LookTargetType.None;
     private string _currentLookLabel = "None";
@@ -41,6 +58,13 @@ public class PlayerShovelInteractor : MonoBehaviour
 
         if (rayOrigin == null && Camera.main != null)
             rayOrigin = Camera.main.transform;
+
+        _audioSource = GetComponent<AudioSource>();
+        if (_audioSource == null)
+            _audioSource = gameObject.AddComponent<AudioSource>();
+
+        _audioSource.playOnAwake = false;
+        _audioSource.spatialBlend = 0f; // 2D – sounds fine for a first-person game
     }
 
     private void OnEnable()
@@ -79,12 +103,13 @@ public class PlayerShovelInteractor : MonoBehaviour
             return;
         }
 
-        bool hasDigTargets = TryGetDigTargets(out ShovelTapDigTarget tapTarget, out ShovelHoldDigTarget holdTarget, out RaycastHit hit, out bool hasRaycastHit);
+        TryGetTargets(out ShovelTapDigTarget tapTarget, out ShovelHoldDigTarget holdTarget, out ShovelDumpTarget dumpTarget, out RaycastHit hit, out bool hasRaycastHit);
+        bool hasActionableTarget = HasActionableTarget(tapTarget, holdTarget, dumpTarget);
 
         if (debugInteraction)
         {
-            DrawLookRay(hasRaycastHit, hasDigTargets, hit.distance);
-            LogLookTargetChanges(hasRaycastHit, hasDigTargets, tapTarget, holdTarget, hit);
+            DrawLookRay(hasRaycastHit, hasActionableTarget, hit.distance);
+            LogLookTargetChanges(hasRaycastHit, hasActionableTarget, tapTarget, holdTarget, dumpTarget, hit);
         }
 
         if (!HasShovelEquipped())
@@ -93,17 +118,29 @@ public class PlayerShovelInteractor : MonoBehaviour
             return;
         }
 
-        if (!hasDigTargets)
+        if (IsShovelLoaded())
         {
-            _interactPressedThisFrame = false;
-            return;
+            if (_interactPressedThisFrame && TryUnloadToTarget(tapTarget, holdTarget, dumpTarget))
+            {
+                _loadedDirtSource = LoadedDirtSource.None;
+                PlayDigSound();
+                if (debugInteraction)
+                    Debug.Log("[PlayerShovelInteractor] Shovel emptied. You can dig again.");
+            }
+            else if (_interactPressedThisFrame && debugInteraction)
+            {
+                Debug.Log($"[PlayerShovelInteractor] Shovel is full ({_loadedDirtSource}). Unload at a valid target first.");
+            }
         }
-
-        if (_interactPressedThisFrame && tapTarget != null)
-            tapTarget.InteractOnce();
-
-        if (_interactHeld && holdTarget != null)
-            holdTarget.InteractHold(Time.deltaTime);
+        else
+        {
+            if (TryLoadFromTarget(tapTarget, holdTarget, dumpTarget))
+            {
+                PlayDigSound();
+                if (debugInteraction)
+                    Debug.Log($"[PlayerShovelInteractor] Shovel filled from {_loadedDirtSource}. Unload to the opposite target.");
+            }
+        }
 
         _interactPressedThisFrame = false;
     }
@@ -127,20 +164,81 @@ public class PlayerShovelInteractor : MonoBehaviour
         }
     }
 
-    private bool TryGetDigTargets(out ShovelTapDigTarget tapTarget, out ShovelHoldDigTarget holdTarget, out RaycastHit hit, out bool hasRaycastHit)
+    private void TryGetTargets(out ShovelTapDigTarget tapTarget, out ShovelHoldDigTarget holdTarget, out ShovelDumpTarget dumpTarget, out RaycastHit hit, out bool hasRaycastHit)
     {
         tapTarget = null;
         holdTarget = null;
+        dumpTarget = null;
         hit = default;
-        hasRaycastHit = Physics.Raycast(rayOrigin.position, rayOrigin.forward, out hit, interactDistance, interactMask, QueryTriggerInteraction.Ignore);
+        QueryTriggerInteraction triggerInteraction = includeTriggerColliders
+            ? QueryTriggerInteraction.Collide
+            : QueryTriggerInteraction.Ignore;
+
+        hasRaycastHit = Physics.Raycast(rayOrigin.position, rayOrigin.forward, out hit, interactDistance, interactMask, triggerInteraction);
 
         if (!hasRaycastHit)
-            return false;
+            return;
 
         tapTarget = hit.collider.GetComponentInParent<ShovelTapDigTarget>();
         holdTarget = hit.collider.GetComponentInParent<ShovelHoldDigTarget>();
+        dumpTarget = hit.collider.GetComponentInParent<ShovelDumpTarget>();
 
-        return tapTarget != null || holdTarget != null;
+    }
+
+    private bool IsShovelLoaded()
+    {
+        return _loadedDirtSource != LoadedDirtSource.None;
+    }
+
+    private bool HasActionableTarget(ShovelTapDigTarget tapTarget, ShovelHoldDigTarget holdTarget, ShovelDumpTarget dumpTarget)
+    {
+        if (!IsShovelLoaded())
+            return (tapTarget != null && tapTarget.CanDig) || (holdTarget != null && holdTarget.CanDig) || (dumpTarget != null && dumpTarget.CanTakeLoad);
+
+        if (_loadedDirtSource == LoadedDirtSource.Grave)
+            return dumpTarget != null && dumpTarget.CanAddLoad;
+
+        return (tapTarget != null && tapTarget.CanReceiveDirt) || (holdTarget != null && holdTarget.CanReceiveDirt);
+    }
+
+    private bool TryLoadFromTarget(ShovelTapDigTarget tapTarget, ShovelHoldDigTarget holdTarget, ShovelDumpTarget dumpTarget)
+    {
+        if (_interactPressedThisFrame && tapTarget != null && tapTarget.TryDigOnce())
+        {
+            _loadedDirtSource = LoadedDirtSource.Grave;
+            return true;
+        }
+
+        if (_interactHeld && holdTarget != null && holdTarget.TryDigHold(Time.deltaTime))
+        {
+            _loadedDirtSource = LoadedDirtSource.Grave;
+            return true;
+        }
+
+        if (_interactPressedThisFrame && dumpTarget != null && dumpTarget.TryTakeLoad())
+        {
+            _loadedDirtSource = LoadedDirtSource.Dump;
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool TryUnloadToTarget(ShovelTapDigTarget tapTarget, ShovelHoldDigTarget holdTarget, ShovelDumpTarget dumpTarget)
+    {
+        if (_loadedDirtSource == LoadedDirtSource.Grave)
+            return _interactPressedThisFrame && dumpTarget != null && dumpTarget.TryAddLoad();
+
+        if (_loadedDirtSource == LoadedDirtSource.Dump)
+        {
+            if (_interactPressedThisFrame && tapTarget != null && tapTarget.TryAddBackOnce())
+                return true;
+
+            if (_interactPressedThisFrame && holdTarget != null && holdTarget.TryAddBackLoad())
+                return true;
+        }
+
+        return false;
     }
 
     private void DrawLookRay(bool hasRaycastHit, bool hasDigTargets, float hitDistance)
@@ -158,17 +256,41 @@ public class PlayerShovelInteractor : MonoBehaviour
         Debug.DrawRay(rayOrigin.position, rayOrigin.forward * rayLength, rayColor);
     }
 
-    private void LogLookTargetChanges(bool hasRaycastHit, bool hasDigTargets, ShovelTapDigTarget tapTarget, ShovelHoldDigTarget holdTarget, RaycastHit hit)
+    private void LogLookTargetChanges(bool hasRaycastHit, bool hasActionableTarget, ShovelTapDigTarget tapTarget, ShovelHoldDigTarget holdTarget, ShovelDumpTarget dumpTarget, RaycastHit hit)
     {
         GameObject lookedObject = null;
         LookTargetType lookTargetType = LookTargetType.None;
 
         if (hasRaycastHit)
         {
-            if (hasDigTargets)
+            if (hasActionableTarget)
             {
-                lookedObject = tapTarget != null ? tapTarget.gameObject : holdTarget.gameObject;
-                lookTargetType = LookTargetType.DigTarget;
+                if (IsShovelLoaded())
+                {
+                    if (_loadedDirtSource == LoadedDirtSource.Grave)
+                    {
+                        lookedObject = dumpTarget != null ? dumpTarget.gameObject : null;
+                        lookTargetType = LookTargetType.DumpTarget;
+                    }
+                    else
+                    {
+                        lookedObject = tapTarget != null ? tapTarget.gameObject : holdTarget != null ? holdTarget.gameObject : null;
+                        lookTargetType = LookTargetType.DigTarget;
+                    }
+                }
+                else
+                {
+                    if (tapTarget != null || holdTarget != null)
+                    {
+                        lookedObject = tapTarget != null ? tapTarget.gameObject : holdTarget.gameObject;
+                        lookTargetType = LookTargetType.DigTarget;
+                    }
+                    else
+                    {
+                        lookedObject = dumpTarget != null ? dumpTarget.gameObject : null;
+                        lookTargetType = LookTargetType.DumpTarget;
+                    }
+                }
             }
             else
             {
@@ -200,7 +322,19 @@ public class PlayerShovelInteractor : MonoBehaviour
         if (lookTargetType == LookTargetType.DigTarget)
             return $"DigTarget: {lookedObject.name} ({distance}m)";
 
+        if (lookTargetType == LookTargetType.DumpTarget)
+            return $"DumpTarget: {lookedObject.name} ({distance}m)";
+
         return $"Obstructed by: {lookedObject.name} ({distance}m)";
+    }
+
+    private void PlayDigSound()
+    {
+        if (_audioSource == null || digSound == null)
+            return;
+
+        _audioSource.pitch = Random.Range(digPitchMin, digPitchMax);
+        _audioSource.PlayOneShot(digSound, digVolume);
     }
 
     private bool HasShovelEquipped()
