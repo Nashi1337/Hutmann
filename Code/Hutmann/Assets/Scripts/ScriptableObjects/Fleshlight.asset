@@ -13,8 +13,16 @@ MonoBehaviour:
   m_Name: Fleshlight
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   displayName: FleshLight
-  itemType: 0
+  itemType: 2
   equippedPrefab: {fileID: 1325348714358181264, guid: 07bc204107a2aef4aba706dd118830ff, type: 3}
   equipLocalPosition: {x: 0, y: 0.4, z: 0}
   equipLocalEuler: {x: 0, y: 0, z: 0}
   equipLocalScale: {x: 1, y: 1, z: 1}
+  flashlightLocalPosition: {x: 0, y: 0.02, z: 0.08}
+  flashlightLocalEuler: {x: 0, y: 0, z: 0}
+  flashlightColor: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
+  flashlightIntensity: 2.5
+  flashlightRange: 14
+  flashlightOuterSpotAngle: 55
+  flashlightInnerSpotAngle: 35
+  flashlightCastsShadows: 0
