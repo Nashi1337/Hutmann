@@ -5,6 +5,8 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+    public event Action<GameObject, ItemDefinition> EquippedInstanceChanged;
+
     [SerializeField] private Transform cameraPivot;
     
     [SerializeField] private float walkSpeed = 5f;
@@ -27,6 +29,8 @@ public class PlayerController : MonoBehaviour
     private PlayerEquipment equipment;
     private ItemDefinition equippedItem;
     [SerializeField] private Transform handSocket;
+
+    public GameObject CurrentEquippedInstance { get; private set; }
     
     private void Awake()
     {
@@ -85,12 +89,16 @@ public class PlayerController : MonoBehaviour
             Destroy(handSocket.transform.GetChild(i).gameObject);
         }
 
+        CurrentEquippedInstance = null;
+        EquippedInstanceChanged?.Invoke(null, equippedItem);
+
         if (equippedItem == null || equippedItem.equippedPrefab == null) return;
 
         var equippedInstance = Instantiate(equippedItem.equippedPrefab, handSocket);
         equippedInstance.transform.localPosition = equippedItem.equipLocalPosition;
         equippedInstance.transform.localRotation = Quaternion.Euler(equippedItem.equipLocalEuler);
         equippedInstance.transform.localScale = equippedItem.equipLocalScale;
+        CurrentEquippedInstance = equippedInstance;
 
         if (equippedItem.itemType == ItemType.Flashlight)
         {
@@ -100,6 +108,8 @@ public class PlayerController : MonoBehaviour
 
             flashlight.Initialize(equippedItem);
         }
+
+        EquippedInstanceChanged?.Invoke(CurrentEquippedInstance, equippedItem);
     }
 
     private void Look()

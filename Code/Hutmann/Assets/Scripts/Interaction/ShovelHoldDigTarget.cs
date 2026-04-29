@@ -6,10 +6,10 @@ public class ShovelHoldDigTarget : ShovelDigTargetBase
     [SerializeField] private int requiredLoads = 4;
 
     public bool IsComplete => completedLoads >= requiredLoads;
-    public bool CanDig => completedLoads < requiredLoads;
+    public bool CanDig => !IsComplete;
     public bool CanReceiveDirt => completedLoads > 0;
 
-    private float heldSeconds;
+    private float currentLoadSeconds;
     private int completedLoads;
 
     protected override void Awake()
@@ -21,28 +21,17 @@ public class ShovelHoldDigTarget : ShovelDigTargetBase
 
     public bool TryDigHold(float deltaTime)
     {
-        if (!CanDig)
+        if (IsComplete)
             return false;
 
         float secondsPerLoad = secondsToComplete / requiredLoads;
-        heldSeconds += Mathf.Max(0f, deltaTime);
+        currentLoadSeconds += deltaTime;
 
-        if (heldSeconds < secondsPerLoad)
+        if (currentLoadSeconds < secondsPerLoad)
             return false;
 
-        heldSeconds = 0f;
+        currentLoadSeconds = 0f;
         completedLoads = Mathf.Min(completedLoads + 1, requiredLoads);
-        SetProgress(completedLoads / (float)requiredLoads);
-        return true;
-    }
-
-    public bool TryAddBackLoad()
-    {
-        if (!CanReceiveDirt)
-            return false;
-
-        heldSeconds = 0f;
-        completedLoads = Mathf.Max(completedLoads - 1, 0);
         SetProgress(completedLoads / (float)requiredLoads);
         return true;
     }
@@ -52,9 +41,20 @@ public class ShovelHoldDigTarget : ShovelDigTargetBase
         TryDigHold(deltaTime);
     }
 
+    public bool TryAddBackLoad()
+    {
+        if (!CanReceiveDirt)
+            return false;
+
+        completedLoads--;
+        currentLoadSeconds = 0f;
+        SetProgress(completedLoads / (float)requiredLoads);
+        return true;
+    }
+
     protected override void OnComplete()
     {
-        // Keep grave in scene so dirt can be moved back from dump piles.
+        // Keep the grave target alive so dirt can be moved back into it.
     }
 }
 
