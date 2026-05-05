@@ -32,6 +32,6 @@ namespace ScriptableObjects
         public float flashlightRange = 14f;
         [Range(1f, 179f)] public float flashlightOuterSpotAngle = 55f;
         [Range(1f, 179f)] public float flashlightInnerSpotAngle = 35f;
-        public bool flashlightCastsShadows;
+        public bool flashlightCastsShadows = true;
     }
 }

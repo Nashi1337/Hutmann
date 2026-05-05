@@ -54,18 +54,42 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private InputAction _flashlightToggleAction;
+
     private void OnEnable()
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         if (equipment != null)
             equipment.OnEquippedChanged += HandleEquippedChanged;
+
+        var playerInput = GetComponent<PlayerInput>();
+        if (playerInput != null)
+        {
+            _flashlightToggleAction = playerInput.actions.FindAction("Flashlight");
+            if (_flashlightToggleAction != null)
+                _flashlightToggleAction.performed += OnFlashlightToggle;
+        }
     }
     
     void OnDisable()
     {
         if (equipment != null)
             equipment.OnEquippedChanged -= HandleEquippedChanged;
+
+        if (_flashlightToggleAction != null)
+        {
+            _flashlightToggleAction.performed -= OnFlashlightToggle;
+            _flashlightToggleAction = null;
+        }
+    }
+
+    private void OnFlashlightToggle(InputAction.CallbackContext ctx)
+    {
+        if (CurrentEquippedInstance == null) return;
+        var flashlight = CurrentEquippedInstance.GetComponent<FirstPersonFlashlight>();
+        if (flashlight != null)
+            flashlight.Toggle();
     }
 
     private void Update()
