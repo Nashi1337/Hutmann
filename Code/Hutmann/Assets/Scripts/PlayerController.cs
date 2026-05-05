@@ -5,6 +5,8 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+    public event Action<GameObject, ItemDefinition> EquippedInstanceChanged;
+
     [SerializeField] private Transform cameraPivot;
     
     [SerializeField] private float walkSpeed = 5f;
@@ -19,6 +21,7 @@ public class PlayerController : MonoBehaviour
     private Vector2 moveInput;
     private Vector2 lookInput;
     private bool sprintHeld;
+    private bool lookLocked;
     
     private Vector3 velocity;
     private float pitch;
@@ -26,6 +29,8 @@ public class PlayerController : MonoBehaviour
     private PlayerEquipment equipment;
     private ItemDefinition equippedItem;
     [SerializeField] private Transform handSocket;
+
+    public GameObject CurrentEquippedInstance { get; private set; }
     
     private void Awake()
     {
@@ -84,16 +89,34 @@ public class PlayerController : MonoBehaviour
             Destroy(handSocket.transform.GetChild(i).gameObject);
         }
 
+        CurrentEquippedInstance = null;
+        EquippedInstanceChanged?.Invoke(null, equippedItem);
+
         if (equippedItem == null || equippedItem.equippedPrefab == null) return;
 
         var equippedInstance = Instantiate(equippedItem.equippedPrefab, handSocket);
         equippedInstance.transform.localPosition = equippedItem.equipLocalPosition;
         equippedInstance.transform.localRotation = Quaternion.Euler(equippedItem.equipLocalEuler);
         equippedInstance.transform.localScale = equippedItem.equipLocalScale;
+        CurrentEquippedInstance = equippedInstance;
+
+        if (equippedItem.itemType == ItemType.Flashlight)
+        {
+            var flashlight = equippedInstance.GetComponent<FirstPersonFlashlight>();
+            if (flashlight == null)
+                flashlight = equippedInstance.AddComponent<FirstPersonFlashlight>();
+
+            flashlight.Initialize(equippedItem);
+        }
+
+        EquippedInstanceChanged?.Invoke(CurrentEquippedInstance, equippedItem);
     }
 
     private void Look()
     {
+        if (lookLocked)
+            return;
+
         float yaw = lookInput.x * mouseSensitivity;
         float pitchDelta = lookInput.y * mouseSensitivity;
 
@@ -104,6 +127,12 @@ public class PlayerController : MonoBehaviour
         
         if(cameraPivot != null)
             cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+    }
+
+    public void SetLookLocked(bool locked)
+    {
+        lookLocked = locked;
+        lookInput = Vector2.zero;
     }
 
     private void Move()
@@ -136,7 +165,10 @@ public class PlayerController : MonoBehaviour
     }
     
     public void OnMove(InputAction.CallbackContext ctx) => moveInput = ctx.ReadValue<Vector2>();
-    public void OnLook(InputAction.CallbackContext ctx) => lookInput = ctx.ReadValue<Vector2>();
+    public void OnLook(InputAction.CallbackContext ctx)
+    {
+        lookInput = lookLocked ? Vector2.zero : ctx.ReadValue<Vector2>();
+    }
     
     public void OnSprint(InputAction.CallbackContext ctx) => sprintHeld = ctx.ReadValueAsButton();
 }

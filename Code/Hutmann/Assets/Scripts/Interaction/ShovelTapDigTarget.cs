@@ -5,6 +5,8 @@ public class ShovelTapDigTarget : ShovelDigTargetBase
     [SerializeField] private int requiredInteractions = 4;
 
     public bool IsComplete => completedInteractions >= requiredInteractions;
+    public bool CanDig => !IsComplete;
+    public bool CanReceiveDirt => completedInteractions > 0;
 
     private int completedInteractions;
 
@@ -14,13 +16,34 @@ public class ShovelTapDigTarget : ShovelDigTargetBase
         requiredInteractions = Mathf.Max(1, requiredInteractions);
     }
 
-    public void InteractOnce()
+    public bool TryDigOnce()
     {
         if (IsComplete)
-            return;
+            return false;
 
         completedInteractions++;
         SetProgress(completedInteractions / (float)requiredInteractions);
+        return true;
+    }
+
+    public void InteractOnce()
+    {
+        TryDigOnce();
+    }
+
+    public bool TryAddBackOnce()
+    {
+        if (!CanReceiveDirt)
+            return false;
+
+        completedInteractions--;
+        SetProgress(completedInteractions / (float)requiredInteractions);
+        return true;
+    }
+
+    protected override void OnComplete()
+    {
+        // Keep the grave target alive so dirt can be moved back into it.
     }
 }
 
