@@ -25,4 +25,4 @@ MonoBehaviour:
   flashlightRange: 14
   flashlightOuterSpotAngle: 55
   flashlightInnerSpotAngle: 35
-  flashlightCastsShadows: 0
+  flashlightCastsShadows: 1

@@ -774,7 +774,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -6457651556583557924, guid: 65ce390302c4a8941a5d1e8fe339763b, type: 3}
+  - {fileID: 2100000, guid: b803b01dac328184886b56cdb18bbe13, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4271,6 +4271,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 661233921673469511, guid: 99be60d1c56b9ae46996c471bdf94cb0, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: b803b01dac328184886b56cdb18bbe13, type: 2}
     - target: {fileID: 1410661037040390950, guid: 99be60d1c56b9ae46996c471bdf94cb0, type: 3}
       propertyPath: m_Name
       value: grab_fixed
@@ -4348,12 +4352,40 @@ PrefabInstance:
       value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 4874177898438713493, guid: 99be60d1c56b9ae46996c471bdf94cb0, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2.78
+      objectReference: {fileID: 0}
+    - target: {fileID: 4874177898438713493, guid: 99be60d1c56b9ae46996c471bdf94cb0, type: 3}
       propertyPath: m_LocalScale.y
       value: 1.4
       objectReference: {fileID: 0}
     - target: {fileID: 4874177898438713493, guid: 99be60d1c56b9ae46996c471bdf94cb0, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 5.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4874177898438713493, guid: 99be60d1c56b9ae46996c471bdf94cb0, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.78
+      objectReference: {fileID: 0}
+    - target: {fileID: 4874177898438713493, guid: 99be60d1c56b9ae46996c471bdf94cb0, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4874177898438713493, guid: 99be60d1c56b9ae46996c471bdf94cb0, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4874177898438713493, guid: 99be60d1c56b9ae46996c471bdf94cb0, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4874177898438713493, guid: 99be60d1c56b9ae46996c471bdf94cb0, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4874177898438713493, guid: 99be60d1c56b9ae46996c471bdf94cb0, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6958242881499950131, guid: 99be60d1c56b9ae46996c471bdf94cb0, type: 3}
       propertyPath: m_Layer

@@ -49,6 +49,20 @@ public class FirstPersonFlashlight : MonoBehaviour
         lightTransform.localScale = Vector3.one;
     }
 
+    public bool IsOn => flashlightLight != null && flashlightLight.enabled;
+
+    public void Toggle()
+    {
+        if (flashlightLight == null) return;
+        flashlightLight.enabled = !flashlightLight.enabled;
+    }
+
+    public void SetOn(bool on)
+    {
+        if (flashlightLight == null) return;
+        flashlightLight.enabled = on;
+    }
+
     private void OnDisable()
     {
         if (flashlightLight != null)
