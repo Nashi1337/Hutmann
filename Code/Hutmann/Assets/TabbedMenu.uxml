@@ -1,0 +1,19 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:TabView view-data-key="TabbedMenu" reorderable="true" name="PauseTabs" style="left: auto; top: 10%; align-self: center; width: auto; font-size: 100%; -unity-text-align: upper-center;">
+        <ui:Tab label="Game" name="GameTab" view-data-key="GameTab">
+            <ui:Label text="Hallo"/>
+        </ui:Tab>
+        <ui:Tab label="Graphics&#10;" name="GraphicsTab" view-data-key="GraphicsTab">
+            <ui:Label text="Hi" style="background-color: rgba(0, 0, 0, 0);"/>
+            <ui:Slider label="Brightness" value="42" high-value="100" name="BrightnessSlider" view-data-key="BrightnessSlider" fill="false" show-input-field="false"/>
+            <ui:Toggle label="Fullscreen" name="FullscreenToggle" value="true" view-data-key="FullscreenToggle" enabled="true" style="justify-content: space-between; align-self: auto; align-content: auto; margin-left: 30%; margin-right: auto; align-items: stretch; flex-direction: row; flex-wrap: nowrap; flex-shrink: 0;"/>
+            <ui:DropdownField label="Resolution" name="ResolutionDropDown" view-data-key="ResolutionDropDown"/>
+        </ui:Tab>
+        <ui:Tab label="Audio" name="AudioTab" view-data-key="AudioTab">
+            <ui:Label text="Hey"/>
+        </ui:Tab>
+        <ui:Tab label="Accessibility" name="Accessibility" view-data-key="AccessibilityTab">
+            <ui:Label text="Moin"/>
+        </ui:Tab>
+    </ui:TabView>
+</ui:UXML>
