@@ -25,7 +25,8 @@ public class InteractionTooltipUI : MonoBehaviour
     }
     public void Hide()
     {
-        container.SetActive(false);
+        if(container != null)
+            container.SetActive(false);
     }
     public static InteractionTooltipUI CreateDefault()
     {
