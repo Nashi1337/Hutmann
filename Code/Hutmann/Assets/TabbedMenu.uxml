@@ -1,7 +1,8 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/TabbedMenu.uss?fileID=7433441132597879392&amp;guid=e7102dfa713c23346bac6e326e8df770&amp;type=3#TabbedMenu"/>
     <ui:TabView view-data-key="TabbedMenu" reorderable="true" name="PauseTabs" style="left: auto; top: 10%; align-self: center; width: auto; font-size: 100%; -unity-text-align: upper-center;">
         <ui:Tab label="Game" name="GameTab" view-data-key="GameTab">
-            <ui:Label text="Hallo"/>
+            <ui:Label text="Hallo" class="button"/>
         </ui:Tab>
         <ui:Tab label="Graphics&#10;" name="GraphicsTab" view-data-key="GraphicsTab">
             <ui:Label text="Hi" style="background-color: rgba(0, 0, 0, 0);"/>

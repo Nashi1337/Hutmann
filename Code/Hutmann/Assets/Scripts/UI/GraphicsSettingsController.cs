@@ -3,7 +3,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using UnityEngine.UI;
+using UnityEngine.UIElements;
+using Image = UnityEngine.UI.Image;
+using Toggle = UnityEngine.UI.Toggle;
 
 public class GraphicsSettingsController : MonoBehaviour
 {
@@ -21,12 +23,36 @@ public class GraphicsSettingsController : MonoBehaviour
 
     private readonly List<Resolution> resolutionOptions = new List<Resolution>();
     private ColorAdjustments colorAdjustments;
+    
+    [SerializeField] private UIDocument PauseMenuDocument;
+    private string SliderName = "BrightnessSlider";
+
 
     private void Start()
     {
+        var root = PauseMenuDocument.rootVisualElement;
+        brightnessSlider = root.Q<Slider>(SliderName);
+        
+        if (brightnessSlider == null)
+        {
+            Debug.LogWarning("brightnessSlider not found in UXML.");
+            return;
+        }
+        
+        float brightness = PlayerPrefs.GetFloat("Brightness", 1f);
+        brightnessSlider.SetValueWithoutNotify(brightness);
+        ApplyBrightness(brightness);
+        brightnessSlider.RegisterValueChangedCallback(OnBrightnessChanged);
+        
         BuildResolutionDropdown();
         InitializeFullScreenToggle();
         InitializeBrightness();
+    }
+
+    private void OnDisable()
+    {
+        if(brightnessSlider != null)
+            brightnessSlider.UnregisterValueChangedCallback(OnBrightnessChanged);
     }
 
     private void BuildResolutionDropdown()
@@ -122,7 +148,7 @@ public class GraphicsSettingsController : MonoBehaviour
         brightnessSlider.SetValueWithoutNotify(value);
         ApplyBrightness(value);
 
-        brightnessSlider.onValueChanged.AddListener(OnBrightnessChanged);
+        //brightnessSlider.onValueChanged.AddListener(OnBrightnessChanged);
     }
 
     private void OnDestroy()
@@ -131,8 +157,8 @@ public class GraphicsSettingsController : MonoBehaviour
             resolutionDropdown.onValueChanged.RemoveListener(OnResolutionDropdownChanged);
         if (fullscreenToggle != null)
             fullscreenToggle.onValueChanged.RemoveListener(OnFullScreenChanged);
-        if (brightnessSlider != null)
-            brightnessSlider.onValueChanged.RemoveListener(OnBrightnessChanged);
+        if (brightnessSlider != null){}
+            //brightnessSlider.onValueChanged.RemoveListener(OnBrightnessChanged);
     }
 
     private void OnResolutionDropdownChanged(int selectedIndex)
@@ -163,11 +189,12 @@ public class GraphicsSettingsController : MonoBehaviour
         Screen.fullScreenMode = isFullScreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed;
     }
 
-    private void OnBrightnessChanged(float value)
+    private void OnBrightnessChanged(ChangeEvent<float> evt)
     {
+        float value = evt.newValue;
         ApplyBrightness(value);
-        GameSettingsStore.SaveBrightness(value);
-        GameSettingsStore.SaveAll();
+        PlayerPrefs.SetFloat("Brightness", value);
+        PlayerPrefs.Save();
     }
 
     private void ApplyBrightness(float sliderValue)

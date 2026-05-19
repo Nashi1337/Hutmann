@@ -1,0 +1,9 @@
+:root {
+}
+
+.button {
+    -unity-background-image-tint-color: rgb(112, 255, 6);
+}
+
+.unity-base-slider__tracker {
+}
